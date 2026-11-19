@@ -1,89 +1,396 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
-  <meta name="theme-color" content="#0f172a">
-  <title>銀座吸菸區地圖｜手機即時定位周邊指定喫煙所</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>東京吸菸區地圖｜原宿・銀座手機定位與導航</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
   <style>
-    html,body{font-family:Inter,"Noto Sans TC",system-ui,-apple-system,sans-serif;height:100%;margin:0;overscroll-behavior:none}
-    #map{width:100%;height:420px;z-index:1}
-    @media(min-width:768px){#map{height:100%;min-height:560px}}
-    .no-scrollbar::-webkit-scrollbar{display:none}.no-scrollbar{-ms-overflow-style:none;scrollbar-width:none}
-    .user-pulse{position:relative;width:24px;height:24px}.user-pulse:before{content:"";position:absolute;inset:-6px;border-radius:50%;background:rgba(37,99,235,.28);animation:pulse 2s cubic-bezier(.215,.61,.355,1) infinite}.user-pulse:after{content:"";position:absolute;inset:4px;border-radius:50%;background:#2563eb;border:3px solid #fff;box-shadow:0 2px 6px #0006}
-    @keyframes pulse{0%{transform:scale(.75);opacity:.9}75%,100%{transform:scale(1.9);opacity:0}}
-    .smoke-pin{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:50%;color:#fff;font-size:15px;border:2.5px solid #fff;box-shadow:0 3px 8px #0005;transition:.15s}.smoke-pin.selected{transform:scale(1.22);box-shadow:0 0 0 4px #0f172a38,0 4px 12px #0006}
-    .leaflet-popup-content-wrapper{border-radius:14px;box-shadow:0 10px 25px #0f172a2e}.leaflet-popup-content{margin:12px 14px;min-width:220px}
+    html, body {
+      font-family: 'Inter', 'Noto Sans TC', system-ui, -apple-system, sans-serif;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      overscroll-behavior: none;
+    }
+    #map {
+      width: 100%;
+      height: 420px;
+      z-index: 1;
+    }
+    @media (min-width: 768px) {
+      #map {
+        height: 100%;
+        min-height: 560px;
+      }
+    }
+    .user-pulse-wrapper {
+      position: relative;
+      width: 24px;
+      height: 24px;
+    }
+    .user-pulse-ring {
+      position: absolute;
+      inset: -6px;
+      border-radius: 9999px;
+      background: rgba(37, 99, 235, 0.28);
+      animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+    }
+    .user-pulse-dot {
+      position: absolute;
+      inset: 4px;
+      border-radius: 9999px;
+      background: #2563eb;
+      border: 3px solid #ffffff;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+    }
+    @keyframes pulse-ring {
+      0% { transform: scale(0.75); opacity: 0.9; }
+      75%, 100% { transform: scale(1.9); opacity: 0; }
+    }
+    .smoke-pin {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+      border-radius: 9999px;
+      color: #ffffff;
+      font-size: 15px;
+      font-weight: 700;
+      border: 2.5px solid #ffffff;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0.28);
+      transition: transform 0.15s ease;
+    }
+    .smoke-pin.is-selected {
+      transform: scale(1.22);
+      box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.22), 0 4px 12px rgba(0, 0, 0, 0.35);
+    }
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    .leaflet-popup-content-wrapper {
+      border-radius: 14px;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.18);
+    }
+    .leaflet-popup-content {
+      margin: 12px 14px;
+      min-width: 220px;
+    }
   </style>
 </head>
 <body class="bg-slate-50 text-slate-900 flex flex-col h-screen overflow-hidden">
+
+  <!-- Top Header -->
   <header class="bg-slate-900 text-white px-3 py-2.5 sm:px-5 flex items-center justify-between gap-2 shrink-0 shadow-md z-20">
     <div class="flex items-center gap-2.5 min-w-0">
-      <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-lg shrink-0">🚬</div>
+      <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-lg shrink-0" aria-hidden="true">🚬</div>
       <div class="min-w-0">
-        <h1 class="text-sm sm:text-base font-bold tracking-tight truncate">銀座吸菸區地圖（中央區指定喫煙場所）</h1>
-        <p class="text-[11px] text-slate-300 truncate">東京日本時間 <span id="clock" class="font-medium text-emerald-300">--:--</span> · 中央區全域禁止路上吸菸</p>
+        <h1 class="text-sm sm:text-base font-bold tracking-tight truncate">東京吸菸區地圖｜原宿・銀座</h1>
+        <p class="text-[11px] text-slate-300 truncate">東京日本時間 <span id="jst-clock" class="font-medium text-emerald-300">--:--</span> · 選擇區域，尋找附近指定喫煙所</p>
       </div>
     </div>
     <div class="flex items-center gap-2 shrink-0">
-      <button id="rules" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700">禁菸規定</button>
-      <button id="locate" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white text-xs sm:text-sm font-semibold flex items-center gap-1.5">📍 <span>定位我的手機</span></button>
+      <button id="btn-rules" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
+        禁菸罰則
+      </button>
+      <button id="btn-locate" type="button" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-sm flex items-center gap-1.5 transition">
+        <span aria-hidden="true">📍</span>
+        <span>定位我的手機</span>
+      </button>
     </div>
   </header>
-  <div id="banner" class="hidden bg-amber-50 border-b border-amber-200 px-3 py-2 text-xs text-amber-900 flex flex-wrap items-center justify-between gap-2 shrink-0 z-10">
-    <span id="bannerText"></span>
-    <div class="flex gap-2"><button id="demo" class="px-2.5 py-1 rounded-md bg-amber-600 text-white">模擬位於銀座四丁目</button><button id="closeBanner" class="font-bold px-1">✕</button></div>
-  </div>
-  <main class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
-    <section class="relative w-full md:flex-1 md:order-2 shrink-0 md:h-full bg-slate-200">
-      <div id="map"></div>
-      <div class="absolute top-2.5 left-12 right-2.5 z-[400] flex gap-1.5 overflow-x-auto no-scrollbar">
-        <span class="bg-white/95 text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border shrink-0">快速定位:</span>
-        <button data-preset="ginza4" class="preset bg-white/95 hover:bg-blue-50 text-[11px] px-2.5 py-1 rounded-full shadow-sm border shrink-0">銀座四丁目</button>
-        <button data-preset="sukiyabashi" class="preset bg-white/95 hover:bg-blue-50 text-[11px] px-2.5 py-1 rounded-full shadow-sm border shrink-0">數寄屋橋/有樂町</button>
-        <button data-preset="higashiginza" class="preset bg-white/95 hover:bg-blue-50 text-[11px] px-2.5 py-1 rounded-full shadow-sm border shrink-0">東銀座/歌舞伎座</button>
-        <button data-preset="ginzasix" class="preset bg-white/95 hover:bg-blue-50 text-[11px] px-2.5 py-1 rounded-full shadow-sm border shrink-0">GINZA SIX</button>
-      </div>
-      <div class="absolute bottom-2.5 left-2.5 z-[400] bg-white/95 rounded-xl px-2.5 py-1.5 shadow-md border text-[11px] flex flex-wrap gap-x-3 gap-y-1">
-        <span>🟢 24H 區營</span><span>🔵 日間區營</span><span>🟠 民間指定</span><span>🟣 百貨商場</span>
-      </div>
-    </section>
-    <aside class="w-full md:w-[410px] md:order-1 flex-1 md:flex-none flex flex-col bg-white border-t md:border-t-0 md:border-r min-h-0 overflow-hidden">
-      <div class="p-3 border-b space-y-2.5 shrink-0">
-        <div class="flex justify-between gap-2 text-xs text-slate-600"><div class="truncate">基準位置：<span id="locLabel" class="font-semibold text-slate-900">銀座四丁目路口（預設）</span></div><span class="text-[11px] text-slate-400 shrink-0">點擊地圖可自訂</span></div>
-        <input id="search" type="search" placeholder="搜尋吸菸區、百貨或地標" class="w-full px-3 py-2 text-sm bg-slate-100 border rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500">
-        <div id="filters" class="flex gap-1.5 overflow-x-auto no-scrollbar">
-          <button data-filter="all" class="filter px-2.5 py-1 rounded-full text-xs bg-slate-900 text-white shrink-0">全部</button>
-          <button data-filter="openNow" class="filter px-2.5 py-1 rounded-full text-xs bg-slate-100 shrink-0">目前開放中</button>
-          <button data-filter="24h" class="filter px-2.5 py-1 rounded-full text-xs bg-slate-100 shrink-0">24小時</button>
-          <button data-filter="municipal" class="filter px-2.5 py-1 rounded-full text-xs bg-slate-100 shrink-0">區營公園</button>
-          <button data-filter="private" class="filter px-2.5 py-1 rounded-full text-xs bg-slate-100 shrink-0">民間指定</button>
-          <button data-filter="department" class="filter px-2.5 py-1 rounded-full text-xs bg-slate-100 shrink-0">百貨商場</button>
-        </div>
-      </div>
-      <div class="px-3 py-1.5 bg-slate-50 border-b flex justify-between text-[11px] text-slate-500"><span id="count"></span><span id="accuracy" class="hidden text-blue-600"></span></div>
-      <div id="list" class="flex-1 overflow-y-auto p-2.5 space-y-2.5 bg-slate-50/70"></div>
-    </aside>
-  </main>
-  <div id="modal" class="hidden fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
-    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl space-y-3.5">
-      <div class="flex justify-between"><div><h2 class="font-bold">銀座・中央區吸菸規定提醒</h2><p class="text-xs text-slate-500">依據中央區官方規定</p></div><button class="closeModal text-lg">✕</button></div>
-      <div class="text-sm text-slate-700 space-y-2">
-        <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-900"><strong>全域禁止路上吸菸：</strong>中央區道路、公園與廣場皆禁止吸菸（含加熱菸及邊走邊抽）。</div>
-        <ul class="list-disc pl-5 text-xs space-y-1"><li>請務必在指定喫煙場所標識範圍內吸菸。</li><li>paspa西銀座及築地川祝橋公園目前暫停使用，本圖已排除。</li><li>開放狀態依日本時間推算，實際以現場公告為準。</li></ul>
-      </div>
-      <div class="flex justify-between items-center text-xs"><a class="text-blue-600" target="_blank" rel="noopener" href="https://www.city.chuo.lg.jp/a0030/kenkouiryou/kenkou/tobacco/kitsuenbasho/kitsuenichiran.html">中央區官方一覽 ↗</a><button class="closeModal px-4 py-1.5 rounded-lg bg-slate-900 text-white">我知道了</button></div>
+
+  <!-- Status / Far-from-Harajuku Banner -->
+  <div id="status-banner" class="hidden bg-amber-50 border-b border-amber-200 px-3 py-2 text-xs text-amber-900 flex flex-wrap items-center justify-between gap-2 shrink-0 z-10">
+    <div class="flex items-center gap-2">
+      <span id="status-icon">ℹ️</span>
+      <span id="status-text"></span>
+    </div>
+    <div class="flex items-center gap-2">
+      <button id="btn-demo-harajuku" type="button" class="px-2.5 py-1 rounded-md bg-amber-600 hover:bg-amber-700 text-white font-medium text-xs transition">
+        模擬位於原宿車站
+      </button>
+      <button id="btn-close-banner" type="button" class="text-amber-700 hover:text-amber-900 px-1 font-bold" aria-label="關閉提示">✕</button>
     </div>
   </div>
+
+  <!-- Main Responsive Layout -->
+  <main class="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+
+    <!-- Map Section -->
+    <section id="map-section" class="relative w-full md:flex-1 md:order-2 shrink-0 md:h-full bg-slate-200">
+      <div id="map"></div>
+
+      <!-- Floating Quick Station Jump Pills -->
+      <div class="absolute top-2.5 left-12 right-2.5 z-[400] flex items-center gap-1.5 overflow-x-auto no-scrollbar pointer-events-auto">
+        <span class="bg-white/95 backdrop-blur text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0">
+          快速定位:
+        </span>
+        <button type="button" data-preset="ginza4" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">銀座四丁目</button>
+        <button type="button" data-preset="sukiyabashi" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">數寄屋橋</button>
+        <button type="button" data-preset="takeshita" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">原宿站竹下口</button>
+        <button type="button" data-preset="meijijingumae" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">明治神宮前/表參道</button>
+        <button type="button" data-preset="hills" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">表參道 Hills</button>
+        <button type="button" data-preset="yoyogi" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">代代木公園</button>
+      </div>
+
+      <!-- Map Legend Pill -->
+      <div class="absolute bottom-2.5 left-2.5 z-[400] bg-white/95 backdrop-blur rounded-xl px-2.5 py-1.5 shadow-md border border-slate-200 text-[11px] flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span>公共／區營</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-amber-600 inline-block"></span>補助／民間</span>
+        <span class="flex items-center gap-1"><span class="w-2.5 h-2.5 rounded-full bg-violet-600 inline-block"></span>商場設施</span>
+      </div>
+    </section>
+
+    <!-- Sidebar List Section -->
+    <aside class="w-full md:w-[400px] lg:w-[430px] md:order-1 flex-1 md:flex-none flex flex-col bg-white border-t md:border-t-0 md:border-r border-slate-200 min-h-0 overflow-hidden">
+
+      <!-- Search & Filters -->
+      <div class="p-3 border-b border-slate-200 space-y-2.5 shrink-0 bg-white">
+        <div class="flex items-center justify-between gap-2 text-xs text-slate-600">
+          <div class="truncate">
+            基準位置：<span id="current-loc-label" class="font-semibold text-slate-900">JR 原宿站竹下口（預設）</span>
+          </div>
+          <span class="text-[11px] text-slate-400 shrink-0">點擊地圖可自訂位置</span>
+        </div>
+
+        <div class="relative">
+          <input id="search-input" type="search" placeholder="搜尋原宿、銀座吸菸區或地標"
+            class="w-full pl-8 pr-3 py-2 text-xs sm:text-sm bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" />
+          <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs" aria-hidden="true">🔍</span>
+        </div>
+
+        <div id="area-bar" class="flex gap-1.5 overflow-x-auto no-scrollbar" aria-label="選擇地圖區域">
+          <button type="button" data-area="all" class="area-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white shrink-0">全部區域</button>
+          <button type="button" data-area="harajuku" class="area-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">原宿・表參道</button>
+          <button type="button" data-area="ginza" class="area-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">銀座・中央區</button>
+        </div>
+        <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5" id="filter-bar">
+          <button type="button" data-filter="all" class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900 text-white shrink-0 transition">全部</button>
+          <button type="button" data-filter="openNow" class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0 transition">目前開放中</button>
+          <button type="button" data-filter="24h" class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0 transition">24小時</button>
+          <button type="button" data-filter="public" class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0 transition">公共戶外</button>
+          <button type="button" data-filter="subsidized" class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0 transition">區補助</button>
+          <button type="button" data-filter="building" class="filter-btn px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0 transition">商場設施</button>
+        </div>
+      </div>
+
+      <!-- Result Count Header -->
+      <div class="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
+        <span id="result-count">顯示 25 個喫煙所（依距離由近到遠排序）</span>
+        <span id="gps-accuracy" class="hidden text-blue-600 font-medium"></span>
+      </div>
+
+      <!-- Scrollable Spot Cards -->
+      <div id="spot-list" class="flex-1 overflow-y-auto p-2.5 space-y-2.5 bg-slate-50/70"></div>
+    </aside>
+  </main>
+
+  <!-- Shibuya / Harajuku Rules Modal -->
+  <div id="rules-modal" class="hidden fixed inset-0 z-[1000] bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 space-y-3.5">
+      <div class="flex items-start justify-between gap-3">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">原宿・銀座吸菸規定</h2>
+          <p class="text-xs text-slate-500 mt-0.5">請依所在地區的官方規定與現場公告</p>
+        </div>
+        <button id="btn-close-modal" type="button" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-1" aria-label="關閉">✕</button>
+      </div>
+      <div class="text-xs sm:text-sm text-slate-700 space-y-2 leading-relaxed">
+        <div class="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-900">
+          <strong>路上吸菸罰鍰 ¥2,000：</strong>原宿、竹下通、表參道等澀谷區街道全面禁止吸菸（含加熱菸與電子煙），違規者可能被處以 <strong>2,000 日圓</strong>過料罰鍰。明治神宮境內亦全面禁菸。
+        </div>
+        <ul class="list-disc pl-5 space-y-1 text-xs text-slate-600">
+          <li>竹下通巷內皆為禁菸區，請先於原宿竹下口喫煙所或 WITH HARAJUKU 等指定場所吸菸。</li>
+          <li>表參道沿道亦設有多處「表参道第二～第十喫煙所」戶外吸菸點（全日開放），沿線留意「喫煙所」指標即可找到。</li>
+          <li>銀座所在的中央區禁止在道路、公園與廣場吸菸，請使用指定喫煙場所。<a class="text-blue-600 underline" target="_blank" rel="noopener noreferrer" href="https://www.city.chuo.lg.jp/a0030/kenkouiryou/kenkou/tobacco/kitsuenbasho/kitsuenichiran.html">中央區官方一覽 ↗</a></li>
+          <li>「目前開放中」依日本標準時間（JST, UTC+9）推算，遇颱風或設施整修時可能臨時關閉。</li>
+        </ul>
+      </div>
+      <div class="pt-1 flex items-center justify-between text-xs">
+        <a href="https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline font-medium">
+          澀谷區官方公共喫煙所一覽 ↗
+        </a>
+        <button id="btn-modal-ok" type="button" class="px-4 py-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 text-white font-medium transition">
+          我知道了
+        </button>
+      </div>
+    </div>
+  </div>
+
   <script>
-  const SOURCE="https://www.city.chuo.lg.jp/a0030/kenkouiryou/kenkou/tobacco/kitsuenbasho/kitsuenichiran.html";
-  const spots=[
+    // Verified Harajuku & Omotesando Smoking Areas Dataset (sourced from Shibuya City 2026-07-22, Laforet Harajuku, e2japan, NAVITIME)
+    const SMOKING_SPOTS = [
+      {
+        id: 'takeshita-exit',
+        nameZh: '原宿站竹下口喫煙所',
+        nameJa: '原宿竹下口喫煙所（渋谷区設置）',
+        address: '東京都渋谷区神宮前1-18先',
+        lat: 35.671558,
+        lng: 139.702886,
+        category: 'public',
+        categoryLabel: '區設公共喫煙所',
+        is24h: true,
+        indoor: false,
+        hoursText: '24小時開放（終日）',
+        schedule: { type: '24h' },
+        note: '距離 JR 原宿站竹下口與明治神宮最近的公共吸菸區，進入竹下通或明治神宮前可先在此使用。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      },
+      {
+        id: 'with-harajuku',
+        nameZh: 'WITH HARAJUKU B1F 喫煙室',
+        nameJa: 'WITH HARAJUKU（ウィズ原宿）地下1階',
+        address: '東京都渋谷区神宮前1-14-30 地下1階',
+        lat: 35.670617,
+        lng: 139.703226,
+        category: 'building',
+        categoryLabel: '商場設施喫煙室',
+        is24h: false,
+        indoor: true,
+        hoursText: '11:00 – 20:00',
+        schedule: { type: 'daily', open: 660, close: 1200 },
+        note: '位於 JR 原宿站東口正對面（IKEA／UNIQLO 所在大樓）B1F，室內空調空間舒適。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      },
+      {
+        id: 'meiji-jingumae-3',
+        nameZh: '明治神宮前站 3 號出口旁喫煙所（表參道沿道）',
+        nameJa: '明治神宮前駅3番出口付近（表参道沿道喫煙所）',
+        address: '東京都渋谷区神宮前1-14 附近（明治神宮前駅3番口旁）',
+        lat: 35.6697,
+        lng: 139.703102,
+        category: 'public',
+        categoryLabel: '公共沿道喫煙所',
+        is24h: true,
+        indoor: false,
+        hoursText: '24小時開放（終日）',
+        schedule: { type: '24h' },
+        note: '表參道沿線公共喫煙所之一（表參道第二～第十喫煙所），位於明治神宮前站 3 號出口旁。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      },
+      {
+        id: 'harakado',
+        nameZh: '東急廣場原宿「ハラカド (Harakado)」G 樓喫煙室',
+        nameJa: '東急プラザ原宿「ハラカド」G階',
+        address: '東京都渋谷区神宮前6-31-21 G階',
+        lat: 35.668339,
+        lng: 139.704769,
+        category: 'building',
+        categoryLabel: '商場設施喫煙室',
+        is24h: false,
+        indoor: true,
+        hoursText: '11:00 – 21:00',
+        schedule: { type: 'daily', open: 660, close: 1260 },
+        note: '位於神宮前十字路口地標「Harakado」G 樓，紙捲菸與加熱菸皆可使用。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      },
+      {
+        id: 'laforet',
+        nameZh: 'Laforet 原宿 4F 露台吸菸區',
+        nameJa: 'ラフォーレ原宿 4F テラス喫煙スペース',
+        address: '東京都渋谷区神宮前1-11-6 4階テラス',
+        lat: 35.669035,
+        lng: 139.705425,
+        category: 'building',
+        categoryLabel: '商場設施喫煙區',
+        is24h: false,
+        indoor: false,
+        hoursText: '11:00 – 20:00（依百貨營業時間為準）',
+        schedule: { type: 'daily', open: 660, close: 1200 },
+        note: 'Laforet 原宿館內全面禁菸，需至 4 樓露台指定吸菸區使用。',
+        sourceUrl: 'https://www.laforet.ne.jp/guide/'
+      },
+      {
+        id: 'omotesando-hills',
+        nameZh: '表參道 Hills B3F 喫煙室',
+        nameJa: '表参道ヒルズ 地下3階',
+        address: '東京都渋谷区神宮前4-12-10 地下3階',
+        lat: 35.667178,
+        lng: 139.709044,
+        category: 'building',
+        categoryLabel: '商場設施喫煙室',
+        is24h: false,
+        indoor: true,
+        hoursText: '11:00 – 23:00',
+        schedule: { type: 'daily', open: 660, close: 1380 },
+        note: '位於表參道大道核心地段，開放至晚間 23:00，適合表參道逛街或晚餐後使用。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      },
+      {
+        id: 'familymart-jingumae3',
+        nameZh: '全家便利商店 神宮前三丁目店喫煙所',
+        nameJa: 'ファミリーマート神宮前三丁目店喫煙所',
+        address: '東京都渋谷区神宮前3-7-7',
+        lat: 35.670576,
+        lng: 139.713464,
+        category: 'subsidized',
+        categoryLabel: '區補助喫煙所',
+        is24h: true,
+        indoor: false,
+        hoursText: '24小時開放（00:00 – 23:59）',
+        schedule: { type: '24h' },
+        note: '位於裏原宿／外苑西通方向（距離竹下通東側不遠），24 小時全天候開放。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      },
+      {
+        id: 'the-tobacco-aoyama',
+        nameZh: 'THE TOBACCO AOYAMA（La Porte 青山 B1F）',
+        nameJa: 'THE TOBACCO AOYAMA（ラ・ポルト青山 地下1階）',
+        address: '東京都渋谷区神宮前5-51-8 地下1階',
+        lat: 35.662839,
+        lng: 139.70957,
+        category: 'subsidized',
+        categoryLabel: '區補助室內喫煙所',
+        is24h: false,
+        indoor: true,
+        hoursText: '11:00 – 20:00',
+        schedule: { type: 'daily', open: 660, close: 1200 },
+        note: '鄰近表參道站／青山學院方向，澀谷區補助之免費室內喫煙室。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      },
+      {
+        id: 'yoyogi-park',
+        nameZh: '代代木公園喫煙所（都立代々木公園 A 地區）',
+        nameJa: '代々木公園喫煙所（代々木公園A地区）',
+        address: '東京都渋谷区代々木神園町2-1',
+        lat: 35.67164,
+        lng: 139.696704,
+        category: 'public',
+        categoryLabel: '公園公共喫煙所',
+        is24h: true,
+        indoor: false,
+        hoursText: '24小時開放（終日）',
+        schedule: { type: '24h' },
+        note: '位於原宿站西側代代木公園內（原宿門／噴水廣場側），適合參拜明治神宮前後順路前往。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      },
+      {
+        id: 'miyashita-park',
+        nameZh: 'MIYASHITA PARK (1F / 3F) 喫煙室',
+        nameJa: 'MIYASHITA PARK（1階・3階）',
+        address: '東京都渋谷区渋谷1-26-5 1階・3階',
+        lat: 35.663338,
+        lng: 139.701824,
+        category: 'building',
+        categoryLabel: '商場設施喫煙室',
+        is24h: false,
+        indoor: true,
+        hoursText: '11:00 – 23:00',
+        schedule: { type: 'daily', open: 660, close: 1380 },
+        note: '沿貓街（Cat Street）往澀谷方向步行可達，1F 與 3F 共有兩處室內喫煙室。',
+        sourceUrl: 'https://www.city.shibuya.tokyo.jp/kankyo/machi-seiso/kitsuen/smokingplace.html'
+      }
+    ];
+
+    SMOKING_SPOTS.forEach(spot => { spot.area = 'harajuku'; });
+    const SOURCE = 'https://www.city.chuo.lg.jp/a0030/kenkouiryou/kenkou/tobacco/kitsuenbasho/kitsuenichiran.html';
+      const GINZA_SPOTS=[
     ["sukiyabashi-park","數寄屋橋公園 指定喫煙場所","数寄屋橋公園（中央区指定喫煙場所）","東京都中央区銀座5-1-1",35.672513,139.762357,"municipal",false,false,"07:00 – 22:30（清掃時暫停）","daily",420,1350,"緊鄰銀座站 C2 出口與有樂町方向。",SOURCE],
     ["shironobashi","城邊橋際綠地帶 指定喫煙場所","城辺橋際緑地帯（中央区指定喫煙場所）","東京都中央区銀座1-2先",35.675466,139.76569,"municipal",true,false,"24小時開放","24h",0,1440,"位於銀座一丁目北側高速道路高架旁綠地帶。",SOURCE],
     ["tsukijigawa-ginza","築地川銀座公園 指定喫煙場所","築地川銀座公園（中央区指定喫煙場所）","東京都中央区築地1-13-20先",35.668607,139.769081,"municipal",true,false,"24小時開放","24h",0,1440,"位於東銀座／歌舞伎座東側。",SOURCE],
@@ -99,39 +406,491 @@
     ["ginza-six","GINZA SIX 指定喫煙室","ギンザシックス（GINZA SIX）","東京都中央区銀座6-10-1",35.669563,139.764004,"private",false,true,"09:00 – 21:00","daily",540,1260,"銀座六丁目大型旗艦商場。",SOURCE],
     ["ginza-mitsukoshi","銀座三越 百貨內喫煙室（11F/12F）","銀座三越 喫煙室","東京都中央区銀座4-6-16",35.671349,139.765752,"department",false,true,"10:00 – 20:00（依百貨營業時間為準）","daily",600,1200,"商場 11F/12F 設有室內喫煙室。","https://www.mistore.jp/store/ginza/service/smokingroom.html"],
     ["matsuya-ginza","松屋銀座 百貨內喫煙室（8F）","松屋銀座 8F 喫煙室","東京都中央区銀座3-6-1",35.672091,139.766629,"department",false,true,"11:00 – 20:00（依官網為準）","daily",660,1200,"8 樓餐廳層設有室內喫煙室。","https://www.ginza.jp/townguide/smoking-area"]
-  ].map(x=>({id:x[0],zh:x[1],ja:x[2],address:x[3],lat:x[4],lng:x[5],category:x[6],is24h:x[7],indoor:x[8],hours:x[9],type:x[10],open:x[11],close:x[12],note:x[13],source:x[14]}));
-  const presets={ginza4:{lat:35.671216,lng:139.765048,label:"銀座四丁目路口（預設）"},sukiyabashi:{lat:35.672513,lng:139.762357,label:"數寄屋橋 / 有樂町側"},higashiginza:{lat:35.669661,lng:139.767647,label:"東銀座 / 歌舞伎座"},ginzasix:{lat:35.669563,lng:139.764004,label:"GINZA SIX 周邊"}};
-  const state={user:{...presets.ginza4},filter:"all",q:"",selected:null};
-  const labels={municipal:"區營指定喫煙場所",private:"民間指定喫煙場所",department:"百貨商場內喫煙室"};
-  function jst(){return new Date(new Date().toLocaleString("en-US",{timeZone:"Asia/Tokyo"}))}
-  function isOpen(s){let n=jst(),m=n.getHours()*60+n.getMinutes(),d=n.getDay();return s.type==="24h"||(s.type==="daily"&&m>=s.open&&m<s.close)||(s.type==="weekday"&&d>0&&d<6&&m>=s.open&&m<s.close)}
-  function dist(a,b,c,d){let R=6371000,r=x=>x*Math.PI/180,p=r(c-a),q=r(d-b),z=Math.sin(p/2)**2+Math.cos(r(a))*Math.cos(r(c))*Math.sin(q/2)**2;return 2*R*Math.atan2(Math.sqrt(z),Math.sqrt(1-z))}
-  function fd(m){return m<1000?Math.round(m)+" 公尺":(m/1000).toFixed(1)+" 公里"}
-  function walk(m){return "步行約 "+Math.max(1,Math.round(m/80))+" 分鐘"}
-  function color(s){return s.category==="municipal"?(s.is24h?"#059669":"#0284c7"):s.category==="private"?"#d97706":"#7c3aed"}
-  function nav(s){return "https://www.google.com/maps/dir/?api=1&destination="+s.lat+","+s.lng+"&travelmode=walking"}
-  function data(){let q=state.q.trim().toLowerCase();return spots.map(s=>({...s,distance:dist(state.user.lat,state.user.lng,s.lat,s.lng),openNow:isOpen(s)})).filter(s=>{if(state.filter==="24h"&&!s.is24h)return false;if(["municipal","private","department"].includes(state.filter)&&s.category!==state.filter)return false;if(state.filter==="openNow"&&!s.openNow)return false;return !q||(s.zh+" "+s.ja+" "+s.address+" "+s.note).toLowerCase().includes(q)}).sort((a,b)=>a.distance-b.distance)}
-  const map=L.map("map",{center:[state.user.lat,state.user.lng],zoom:16});
-  L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",{maxZoom:19,attribution:"Tiles &copy; Esri"}).addTo(map);
-  let userMarker,accuracyCircle;const markers=new Map();
-  function user(){if(userMarker)map.removeLayer(userMarker);if(accuracyCircle)map.removeLayer(accuracyCircle);userMarker=L.marker([state.user.lat,state.user.lng],{icon:L.divIcon({className:"",html:'<div class="user-pulse"></div>',iconSize:[24,24],iconAnchor:[12,12]}),zIndexOffset:1000}).addTo(map).bindPopup("📍 "+state.user.label);if(state.user.accuracy&&state.user.accuracy<3000)accuracyCircle=L.circle([state.user.lat,state.user.lng],{radius:state.user.accuracy,color:"#2563eb",fillOpacity:.12,weight:1}).addTo(map);document.getElementById("locLabel").textContent=state.user.label;let a=document.getElementById("accuracy");if(state.user.accuracy){a.textContent="GPS 誤差 ±"+Math.round(state.user.accuracy)+"m";a.classList.remove("hidden")}else a.classList.add("hidden")}
-  function popup(s){return '<div class="space-y-1.5"><div><b>'+s.zh+'</b><div class="text-[11px] text-slate-500">'+s.ja+'</div></div><div class="text-[11px]">🕒 '+s.hours+'<br>📍 '+s.address+'</div><p class="text-[11px] text-slate-500">'+s.note+'</p><div class="flex gap-2"><a target="_blank" rel="noopener" class="flex-1 text-center p-1.5 rounded-lg bg-blue-600 text-white text-xs" href="'+nav(s)+'">🚶 Google 地圖導航</a><a target="_blank" rel="noopener" class="p-1.5 rounded-lg bg-slate-100 text-xs" href="'+s.source+'">來源 ↗</a></div></div>'}
-  function renderMarkers(ds){markers.forEach(m=>map.removeLayer(m));markers.clear();ds.forEach(s=>{let m=L.marker([s.lat,s.lng],{icon:L.divIcon({className:"",html:'<div class="smoke-pin '+(state.selected===s.id?"selected":"")+'" style="background:'+color(s)+'">🚬</div>',iconSize:[32,32],iconAnchor:[16,16],popupAnchor:[0,-16]})}).addTo(map).bindPopup(popup(s));m.on("click",()=>select(s.id,false));markers.set(s.id,m)})}
-  function renderList(ds){document.getElementById("count").textContent="顯示 "+ds.length+" 個喫煙所（依距離排序）";let l=document.getElementById("list");if(!ds.length){l.innerHTML='<div class="p-6 text-center text-xs bg-white rounded-xl border">沒有符合條件的喫煙所。</div>';return}l.innerHTML=ds.map((s,i)=>'<article data-id="'+s.id+'" class="card cursor-pointer rounded-xl p-3 bg-white border shadow-sm '+(state.selected===s.id?"border-blue-500 ring-2 ring-blue-500/20":"")+'"><div class="flex justify-between gap-2"><div class="min-w-0"><div class="flex gap-1 flex-wrap mb-1"><span class="text-[10px] px-1.5 py-.5 rounded bg-slate-100">#'+(i+1)+'</span><span class="text-[10px] px-1.5 py-.5 rounded '+(s.openNow?"bg-emerald-100 text-emerald-800":"bg-slate-200")+'">'+(s.openNow?"開放中":"休息中")+'</span><span class="text-[10px] px-1.5 py-.5 rounded bg-blue-50">'+(s.indoor?"室內":"室外")+'</span></div><h3 class="text-sm font-bold">'+s.zh+'</h3><p class="text-[11px] text-slate-500 truncate">'+s.ja+'</p></div><div class="text-right shrink-0"><b class="text-sm text-blue-600">'+fd(s.distance)+'</b><div class="text-[10px] text-slate-500">'+walk(s.distance)+'</div></div></div><div class="mt-2 text-[11px] text-slate-600"><div class="truncate">🕒 '+s.hours+'</div><div class="truncate">📍 '+s.address+'</div></div><div class="mt-2 pt-2 border-t flex justify-between"><button data-focus="'+s.id+'" class="focus text-xs font-semibold">🎯 在地圖查看</button><a target="_blank" rel="noopener" class="nav px-2.5 py-1 rounded-lg bg-blue-600 text-white text-[11px]" href="'+nav(s)+'">導航前往 ↗</a></div></article>').join("")}
-  function render(){let ds=data();user();renderMarkers(ds);renderList(ds)}
-  function select(id,pan=true){state.selected=id;let ds=data();renderMarkers(ds);renderList(ds);let s=ds.find(x=>x.id===id);if(s&&pan){map.setView([s.lat,s.lng],17);markers.get(id).openPopup()}let c=document.querySelector('[data-id="'+id+'"]');if(c)c.scrollIntoView({behavior:"smooth",block:"nearest"})}
-  function banner(t){document.getElementById("bannerText").textContent=t;document.getElementById("banner").classList.remove("hidden")}
-  function hideBanner(){document.getElementById("banner").classList.add("hidden")}
-  function locate(){let b=document.getElementById("locate");if(!navigator.geolocation){banner("此瀏覽器不支援定位，請點擊地圖設定位置。");return}b.disabled=true;b.innerHTML="⏳ 定位中…";navigator.geolocation.getCurrentPosition(p=>{b.disabled=false;b.innerHTML="📍 <span>定位我的手機</span>";state.user={lat:p.coords.latitude,lng:p.coords.longitude,accuracy:p.coords.accuracy,label:"我的手機目前位置"};let km=dist(state.user.lat,state.user.lng,presets.ginza4.lat,presets.ginza4.lng)/1000;if(km>15){banner("已取得定位，您目前距離銀座約 "+Math.round(km)+" 公里；可使用銀座模擬定位。");map.setView([presets.ginza4.lat,presets.ginza4.lng],16)}else{hideBanner();map.setView([state.user.lat,state.user.lng],16)}render()},e=>{b.disabled=false;b.innerHTML="📍 <span>定位我的手機</span>";let t=!window.isSecureContext?"請使用 HTTPS 網址開啟，瀏覽器才允許定位。":e.code===1?"定位權限被拒絕，請在瀏覽器設定開啟位置權限。":e.code===3?"定位逾時，請再試一次。":"目前無法取得裝置位置。";banner(t)},{enableHighAccuracy:true,timeout:10000,maximumAge:30000})}
-  document.getElementById("locate").onclick=locate;document.getElementById("demo").onclick=()=>{state.user={...presets.ginza4};map.setView([state.user.lat,state.user.lng],16);hideBanner();render()};document.getElementById("closeBanner").onclick=hideBanner;
-  document.querySelectorAll(".preset").forEach(b=>b.onclick=()=>{state.user={...presets[b.dataset.preset]};map.setView([state.user.lat,state.user.lng],16);hideBanner();render()});
-  map.on("click",e=>{state.user={lat:e.latlng.lat,lng:e.latlng.lng,label:"地圖自訂位置"};render()});
-  document.getElementById("filters").onclick=e=>{let b=e.target.closest(".filter");if(!b)return;state.filter=b.dataset.filter;document.querySelectorAll(".filter").forEach(x=>x.className="filter px-2.5 py-1 rounded-full text-xs shrink-0 "+(x===b?"bg-slate-900 text-white":"bg-slate-100"));render()};
-  document.getElementById("search").oninput=e=>{state.q=e.target.value;render()};
-  document.getElementById("list").onclick=e=>{if(e.target.closest(".nav"))return;let f=e.target.closest(".focus");if(f){select(f.dataset.focus);return}let c=e.target.closest(".card");if(c)select(c.dataset.id)};
-  const modal=document.getElementById("modal");document.getElementById("rules").onclick=()=>modal.classList.remove("hidden");document.querySelectorAll(".closeModal").forEach(b=>b.onclick=()=>modal.classList.add("hidden"));modal.onclick=e=>{if(e.target===modal)modal.classList.add("hidden")};
-  function clock(){let n=jst(),d=["日","一","二","三","四","五","六"];document.getElementById("clock").textContent=String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0")+" (週"+d[n.getDay()]+")"}
-  clock();setInterval(clock,30000);render();setTimeout(()=>map.invalidateSize(),200);
+  
+  ].map(x=>({
+    id:'ginza-'+x[0],nameZh:x[1],nameJa:x[2],address:x[3],lat:x[4],lng:x[5],
+    area:'ginza',category:x[6]==='municipal'?'public':x[6]==='department'?'building':'subsidized',
+    categoryLabel:x[6]==='municipal'?'中央區指定':x[6]==='department'?'百貨商場':'民間指定',
+    is24h:x[7],indoor:x[8],hoursText:x[9],schedule:{type:x[10],open:x[11],close:x[12]},
+    note:x[13],sourceUrl:x[14]
+  }));
+    SMOKING_SPOTS.push(...GINZA_SPOTS);
+
+    const PRESETS = {
+      ginza4: { lat: 35.671216, lng: 139.765048, label: '銀座四丁目路口（預設）' },
+      sukiyabashi: { lat: 35.6723, lng: 139.7624, label: '數寄屋橋 / 有樂町' },
+      takeshita: { lat: 35.671558, lng: 139.702886, label: 'JR 原宿站竹下口（預設）' },
+      meijijingumae: { lat: 35.668645, lng: 139.705769, label: '明治神宮前 / 神宮前十字路口' },
+      hills: { lat: 35.667178, lng: 139.709044, label: '表參道 Hills 周邊' },
+      yoyogi: { lat: 35.67164, lng: 139.696704, label: '代代木公園（原宿側）' }
+    };
+
+    const state = {
+      userLocation: { ...PRESETS.takeshita, source: 'demo', accuracy: null },
+      activeFilter: 'all',
+      activeArea: 'all',
+      searchQuery: '',
+      selectedSpotId: null
+    };
+
+    function getJstNow() {
+      const now = new Date();
+      const jstString = now.toLocaleString('en-US', { timeZone: 'Asia/Tokyo' });
+      return new Date(jstString);
+    }
+
+    function updateJstClock() {
+      const jst = getJstNow();
+      const hh = String(jst.getHours()).padStart(2, '0');
+      const mm = String(jst.getMinutes()).padStart(2, '0');
+      const days = ['日', '一', '二', '三', '四', '五', '六'];
+      const el = document.getElementById('jst-clock');
+      if (el) el.textContent = `${hh}:${mm} (週${days[jst.getDay()]})`;
+    }
+
+    function isSpotOpenNow(spot) {
+      const jst = getJstNow();
+      const mins = jst.getHours() * 60 + jst.getMinutes();
+      const s = spot.schedule;
+      if (s.type === '24h') return true;
+      if (s.type === 'daily') return mins >= s.open && mins < s.close;
+      if (s.type === 'weekday') return jst.getDay() > 0 && jst.getDay() < 6 && mins >= s.open && mins < s.close;
+      return true;
+    }
+
+    function calcDistanceMeters(lat1, lng1, lat2, lng2) {
+      const R = 6371000;
+      const toRad = (deg) => deg * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLng = toRad(lng2 - lng1);
+      const a = Math.sin(dLat / 2) ** 2 +
+                Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLng / 2) ** 2;
+      return 2 * R * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    }
+
+    function formatDistance(meters) {
+      if (meters < 1000) return `${Math.round(meters)} 公尺`;
+      return `${(meters / 1000).toFixed(1)} 公里`;
+    }
+
+    function formatWalkTime(meters) {
+      const mins = Math.max(1, Math.round(meters / 80));
+      if (mins < 60) return `步行約 ${mins} 分鐘`;
+      const hrs = Math.floor(mins / 60);
+      const rem = mins % 60;
+      return `步行約 ${hrs} 小時 ${rem} 分`;
+    }
+
+    function getPinColor(spot) {
+      if (spot.category === 'public') return '#059669';
+      if (spot.category === 'subsidized') return '#d97706';
+      return '#7c3aed';
+    }
+
+    const map = L.map('map', {
+      center: [state.userLocation.lat, state.userLocation.lng],
+      zoom: 16,
+      zoomControl: true
+    });
+
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19,
+      attribution: 'Tiles &copy; Esri'
+    }).addTo(map);
+
+    let userMarker = null;
+    let userAccuracyCircle = null;
+    const spotMarkers = new Map();
+
+    function renderUserMarker() {
+      const { lat, lng, accuracy, label } = state.userLocation;
+      if (userMarker) map.removeLayer(userMarker);
+      if (userAccuracyCircle) map.removeLayer(userAccuracyCircle);
+
+      const userIcon = L.divIcon({
+        className: '',
+        html: `<div class="user-pulse-wrapper"><div class="user-pulse-ring"></div><div class="user-pulse-dot"></div></div>`,
+        iconSize: [24, 24],
+        iconAnchor: [12, 12]
+      });
+
+      userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 })
+        .addTo(map)
+        .bindPopup(`<div class="text-xs font-semibold text-blue-700">📍 ${label}</div><div class="text-[11px] text-slate-500 mt-0.5">${lat.toFixed(5)}, ${lng.toFixed(5)}</div>`);
+
+      if (accuracy && accuracy < 3000) {
+        userAccuracyCircle = L.circle([lat, lng], {
+          radius: accuracy,
+          color: '#2563eb',
+          fillColor: '#3b82f6',
+          fillOpacity: 0.12,
+          weight: 1
+        }).addTo(map);
+      }
+
+      document.getElementById('current-loc-label').textContent = label;
+      const accEl = document.getElementById('gps-accuracy');
+      if (accuracy) {
+        accEl.textContent = `GPS 誤差 ±${Math.round(accuracy)}m`;
+        accEl.classList.remove('hidden');
+      } else {
+        accEl.classList.add('hidden');
+      }
+    }
+
+    function getFilteredSortedSpots() {
+      const q = state.searchQuery.trim().toLowerCase();
+      return SMOKING_SPOTS
+        .map((spot) => {
+          const dist = calcDistanceMeters(state.userLocation.lat, state.userLocation.lng, spot.lat, spot.lng);
+          const openNow = isSpotOpenNow(spot);
+          return { ...spot, distance: dist, openNow };
+        })
+        .filter((spot) => {
+          if (state.activeArea !== 'all' && spot.area !== state.activeArea) return false;
+          if (state.activeFilter === '24h' && !spot.is24h) return false;
+          if (state.activeFilter === 'public' && spot.category !== 'public') return false;
+          if (state.activeFilter === 'subsidized' && spot.category !== 'subsidized') return false;
+          if (state.activeFilter === 'building' && spot.category !== 'building') return false;
+          if (state.activeFilter === 'openNow' && !spot.openNow) return false;
+          if (q) {
+            const hay = `${spot.nameZh} ${spot.nameJa} ${spot.address} ${spot.note}`.toLowerCase();
+            if (!hay.includes(q)) return false;
+          }
+          return true;
+        })
+        .sort((a, b) => a.distance - b.distance);
+    }
+
+    function buildPopupHtml(spot) {
+      const statusBadge = spot.openNow
+        ? '<span class="inline-block px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">開放中</span>'
+        : '<span class="inline-block px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-semibold">休息中</span>';
+      const indoorBadge = spot.indoor
+        ? '<span class="inline-block px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-medium">室內型</span>'
+        : '<span class="inline-block px-2 py-0.5 rounded-full bg-amber-50 text-amber-800 text-[10px] font-medium">室外型</span>';
+      const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}&travelmode=walking`;
+
+      return `
+        <div class="space-y-1.5 text-slate-800">
+          <div class="flex items-center gap-1.5 flex-wrap">
+            ${statusBadge}
+            ${indoorBadge}
+            <span class="text-[11px] font-bold text-blue-700 ml-auto">${formatDistance(spot.distance)}</span>
+          </div>
+          <div>
+            <div class="font-bold text-sm leading-snug">${spot.nameZh}</div>
+            <div class="text-[11px] text-slate-500">${spot.nameJa}</div>
+          </div>
+          <div class="text-[11px] text-slate-600 space-y-0.5">
+            <div>🕒 ${spot.hoursText}</div>
+            <div>📍 ${spot.address}</div>
+          </div>
+          <p class="text-[11px] text-slate-500 leading-snug">${spot.note}</p>
+          <div class="pt-1 flex items-center gap-2">
+            <a href="${navUrl}" target="_blank" rel="noopener noreferrer"
+               class="flex-1 text-center py-1.5 px-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold no-underline">
+              🚶 Google 地圖導航
+            </a>
+            <a href="${spot.sourceUrl}" target="_blank" rel="noopener noreferrer"
+               class="py-1.5 px-2 rounded-lg bg-slate-100 hover:bg-slate-200 text-slate-700 text-[11px] font-medium no-underline">
+              來源 ↗
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderMapMarkers(spots) {
+      spotMarkers.forEach((marker) => map.removeLayer(marker));
+      spotMarkers.clear();
+
+      spots.forEach((spot) => {
+        const color = getPinColor(spot);
+        const isSel = state.selectedSpotId === spot.id;
+        const icon = L.divIcon({
+          className: '',
+          html: `<div class="smoke-pin ${isSel ? 'is-selected' : ''}" style="background:${color};">🚬</div>`,
+          iconSize: [32, 32],
+          iconAnchor: [16, 16],
+          popupAnchor: [0, -16]
+        });
+
+        const marker = L.marker([spot.lat, spot.lng], { icon })
+          .addTo(map)
+          .bindPopup(buildPopupHtml(spot));
+
+        marker.on('click', () => {
+          selectSpot(spot.id, false);
+        });
+
+        spotMarkers.set(spot.id, marker);
+      });
+    }
+
+    function renderSpotList(spots) {
+      const container = document.getElementById('spot-list');
+      const countEl = document.getElementById('result-count');
+      countEl.textContent = `顯示 ${spots.length} 個喫煙所（依距離由近到遠排序）`;
+
+      if (spots.length === 0) {
+        container.innerHTML = `
+          <div class="p-6 text-center text-slate-500 text-xs bg-white rounded-xl border border-slate-200">
+            沒有符合條件的喫煙所，請嘗試清除搜尋字詞或切換篩選條件。
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = spots.map((spot, idx) => {
+        const isSel = state.selectedSpotId === spot.id;
+        const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}&travelmode=walking`;
+        const statusDot = spot.openNow
+          ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-semibold">開放中</span>'
+          : '<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-semibold">休息中</span>';
+        const envBadge = spot.indoor
+          ? '<span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-medium">室內</span>'
+          : '<span class="px-1.5 py-0.5 rounded bg-amber-50 text-amber-800 text-[10px] font-medium">室外</span>';
+
+        return `
+          <article data-spot-id="${spot.id}"
+            class="spot-card cursor-pointer rounded-xl p-3 bg-white border transition shadow-sm hover:shadow ${isSel ? 'border-blue-500 ring-2 ring-blue-500/20' : 'border-slate-200'}">
+            <div class="flex items-start justify-between gap-2">
+              <div class="min-w-0">
+                <div class="flex items-center gap-1.5 flex-wrap mb-1">
+                  <span class="text-[10px] font-bold px-1.5 py-0.5 rounded bg-slate-100 text-slate-600">#${idx + 1}</span>
+                  ${statusDot}
+                  ${envBadge}
+                  <span class="text-[10px] text-slate-500">${spot.categoryLabel}</span>
+                </div>
+                <h3 class="text-sm font-bold text-slate-900 leading-snug">${spot.nameZh}</h3>
+                <p class="text-[11px] text-slate-500 truncate">${spot.nameJa}</p>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="text-sm font-bold text-blue-600">${formatDistance(spot.distance)}</div>
+                <div class="text-[10px] text-slate-500">${formatWalkTime(spot.distance)}</div>
+              </div>
+            </div>
+            <div class="mt-2 text-[11px] text-slate-600 space-y-0.5">
+              <div class="truncate">🕒 ${spot.hoursText}</div>
+              <div class="truncate">📍 ${spot.address}</div>
+            </div>
+            <div class="mt-2.5 pt-2 border-t border-slate-100 flex items-center justify-between gap-2">
+              <button type="button" data-focus-id="${spot.id}" class="focus-btn text-xs font-semibold text-slate-700 hover:text-blue-600 transition">
+                🎯 在地圖查看
+              </button>
+              <a href="${navUrl}" target="_blank" rel="noopener noreferrer"
+                 class="nav-link px-2.5 py-1 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-[11px] font-semibold transition">
+                導航前往 ↗
+              </a>
+            </div>
+          </article>
+        `;
+      }).join('');
+    }
+
+    function renderAll() {
+      const spots = getFilteredSortedSpots();
+      renderUserMarker();
+      renderMapMarkers(spots);
+      renderSpotList(spots);
+    }
+
+    function selectSpot(id, panMap = true) {
+      state.selectedSpotId = id;
+      const spots = getFilteredSortedSpots();
+      renderMapMarkers(spots);
+      renderSpotList(spots);
+
+      const spot = spots.find((s) => s.id === id);
+      if (spot && panMap) {
+        map.setView([spot.lat, spot.lng], 17, { animate: true });
+        const marker = spotMarkers.get(id);
+        if (marker) marker.openPopup();
+      }
+
+      const card = document.querySelector(`.spot-card[data-spot-id="${id}"]`);
+      if (card) card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    function showBanner(text, showDemoBtn = false) {
+      const banner = document.getElementById('status-banner');
+      document.getElementById('status-text').textContent = text;
+      document.getElementById('btn-demo-harajuku').classList.toggle('hidden', !showDemoBtn);
+      banner.classList.remove('hidden');
+    }
+
+    function hideBanner() {
+      document.getElementById('status-banner').classList.add('hidden');
+    }
+
+    function handleGeoSuccess(pos) {
+      const btn = document.getElementById('btn-locate');
+      btn.disabled = false;
+      btn.innerHTML = '<span aria-hidden="true">📍</span><span>定位我的手機</span>';
+
+      const { latitude, longitude, accuracy } = pos.coords;
+      state.userLocation = {
+        lat: latitude,
+        lng: longitude,
+        accuracy,
+        source: 'gps',
+        label: '我的手機目前位置'
+      };
+
+      const distToHarajukuKm = Math.min(
+        calcDistanceMeters(latitude, longitude, 35.671558, 139.702886),
+        calcDistanceMeters(latitude, longitude, 35.671216, 139.765048)
+      ) / 1000;
+      if (distToHarajukuKm > 15) {
+        showBanner(`已取得您的手機定位！偵測到您目前距離原宿或銀座最近地區約 ${Math.round(distToHarajukuKm)} 公里，已依實際距離排序；您也可以一鍵模擬位於原宿車站。`, true);
+        map.setView([35.671558, 139.702886], 16);
+      } else {
+        hideBanner();
+        map.setView([latitude, longitude], 16, { animate: true });
+      }
+
+      renderAll();
+    }
+
+    function handleGeoError(err) {
+      const btn = document.getElementById('btn-locate');
+      btn.disabled = false;
+      btn.innerHTML = '<span aria-hidden="true">📍</span><span>定位我的手機</span>';
+
+      let msg = '無法取得手機定位，請點擊地圖任意位置自訂起點，或先使用模擬定位。';
+      if (!window.isSecureContext) {
+        msg = '目前不是安全的 HTTPS 連線環境，請以手機瀏覽器開啟本站 HTTPS 網址並允許定位。';
+      } else if (err && err.code === 1) {
+        msg = '定位權限被拒絕或遭預覽框阻擋：若在手機瀏覽器開啟，請到手機「設定 → 隱私權/定位服務 → Safari/Chrome」開啟位置權限；若在預覽畫面測試，請先用「模擬位於原宿車站」或點擊地圖任意位置。';
+      } else if (err && err.code === 2) {
+        msg = '目前無法偵測到裝置位置訊號（建議開啟 Wi-Fi 輔助定位或移至室外後再試），您也可以直接點擊地圖設定目前位置。';
+      } else if (err && err.code === 3) {
+        msg = '取得定位逾時，請確認手機定位服務已開啟後再試一次，或直接點擊地圖設定目前位置。';
+      }
+      showBanner(msg, true);
+    }
+
+    function locateMyPhone() {
+      const btn = document.getElementById('btn-locate');
+      if (!navigator.geolocation) {
+        showBanner('此瀏覽器不支援 GPS 定位功能，您可以點擊地圖任意位置或使用上方快速切換站點。', true);
+        return;
+      }
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="animate-spin inline-block">⏳</span><span>定位中...</span>';
+
+      navigator.geolocation.getCurrentPosition(
+        handleGeoSuccess,
+        (err) => {
+          if (err && (err.code === 2 || err.code === 3)) {
+            navigator.geolocation.getCurrentPosition(
+              handleGeoSuccess,
+              handleGeoError,
+              { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 }
+            );
+          } else {
+            handleGeoError(err);
+          }
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+      );
+    }
+
+    document.getElementById('btn-locate').addEventListener('click', locateMyPhone);
+
+    document.getElementById('btn-demo-harajuku').addEventListener('click', () => {
+      state.userLocation = { ...PRESETS.takeshita, source: 'demo', accuracy: null };
+      map.setView([state.userLocation.lat, state.userLocation.lng], 16, { animate: true });
+      hideBanner();
+      renderAll();
+    });
+
+    document.getElementById('btn-close-banner').addEventListener('click', hideBanner);
+
+    document.querySelectorAll('.preset-btn').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const key = btn.getAttribute('data-preset');
+        const p = PRESETS[key];
+        if (!p) return;
+        state.userLocation = { ...p, source: 'custom', accuracy: null };
+        map.setView([p.lat, p.lng], 16, { animate: true });
+        hideBanner();
+        renderAll();
+      });
+    });
+
+    map.on('click', (e) => {
+      state.userLocation = {
+        lat: e.latlng.lat,
+        lng: e.latlng.lng,
+        accuracy: null,
+        source: 'custom',
+        label: '地圖自訂位置'
+      };
+      renderAll();
+    });
+
+    document.getElementById('area-bar').addEventListener('click', (e) => {
+      const btn = e.target.closest('.area-btn');
+      if (!btn) return;
+      state.activeArea = btn.dataset.area;
+      state.selectedSpotId = null;
+      document.querySelectorAll('.area-btn').forEach(el => {
+        el.className = 'area-btn px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 ' + (el === btn ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700');
+      });
+      if (state.activeArea !== 'all') {
+        const center = state.activeArea === 'ginza' ? PRESETS.ginza4 : PRESETS.takeshita;
+        map.setView([center.lat, center.lng], 15);
+        if (state.userLocation.source !== 'gps') state.userLocation = { ...center, source: 'demo', accuracy: null };
+      }
+      renderAll();
+    });
+
+    document.getElementById('filter-bar').addEventListener('click', (e) => {
+      const btn = e.target.closest('.filter-btn');
+      if (!btn) return;
+      state.activeFilter = btn.getAttribute('data-filter');
+      document.querySelectorAll('.filter-btn').forEach((el) => {
+        const active = el === btn;
+        el.className = active
+          ? 'filter-btn px-2.5 py-1 rounded-full text-xs font-medium bg-slate-900 text-white shrink-0 transition'
+          : 'filter-btn px-2.5 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-700 hover:bg-slate-200 shrink-0 transition';
+      });
+      renderAll();
+    });
+
+    document.getElementById('search-input').addEventListener('input', (e) => {
+      state.searchQuery = e.target.value;
+      renderAll();
+    });
+
+    document.getElementById('spot-list').addEventListener('click', (e) => {
+      if (e.target.closest('.nav-link')) return;
+      const focusBtn = e.target.closest('.focus-btn');
+      if (focusBtn) {
+        e.stopPropagation();
+        selectSpot(focusBtn.getAttribute('data-focus-id'), true);
+        return;
+      }
+      const card = e.target.closest('.spot-card');
+      if (card) {
+        selectSpot(card.getAttribute('data-spot-id'), true);
+      }
+    });
+
+    const rulesModal = document.getElementById('rules-modal');
+    document.getElementById('btn-rules').addEventListener('click', () => rulesModal.classList.remove('hidden'));
+    document.getElementById('btn-close-modal').addEventListener('click', () => rulesModal.classList.add('hidden'));
+    document.getElementById('btn-modal-ok').addEventListener('click', () => rulesModal.classList.add('hidden'));
+    rulesModal.addEventListener('click', (e) => {
+      if (e.target === rulesModal) rulesModal.classList.add('hidden');
+    });
+
+    updateJstClock();
+    setInterval(updateJstClock, 30000);
+    renderAll();
+    setTimeout(() => map.invalidateSize(), 200);
   </script>
 </body>
 </html>
