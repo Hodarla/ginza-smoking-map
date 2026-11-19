@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>東京吸菸區地圖｜原宿・銀座手機定位與導航</title>
+  <title>東京吸菸區地圖｜上野・原宿・銀座手機定位與導航</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet" />
@@ -90,13 +90,13 @@
     <div class="flex items-center gap-2.5 min-w-0">
       <div class="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center text-lg shrink-0" aria-hidden="true">🚬</div>
       <div class="min-w-0">
-        <h1 class="text-sm sm:text-base font-bold tracking-tight truncate">東京吸菸區地圖｜原宿・銀座</h1>
-        <p class="text-[11px] text-slate-300 truncate">東京日本時間 <span id="jst-clock" class="font-medium text-emerald-300">--:--</span> · 選擇區域，尋找附近指定喫煙所</p>
+        <h1 class="text-sm sm:text-base font-bold tracking-tight truncate">東京吸菸區地圖｜上野・原宿・銀座</h1>
+        <p class="text-[11px] text-slate-300 truncate">東京日本時間 <span id="jst-clock" class="font-medium text-emerald-300">--:--</span> · 選擇上野、原宿或銀座，尋找指定喫煙所</p>
       </div>
     </div>
     <div class="flex items-center gap-2 shrink-0">
       <button id="btn-rules" type="button" class="px-2.5 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium border border-slate-700 transition">
-        禁菸罰則
+        禁菸規定
       </button>
       <button id="btn-locate" type="button" class="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 active:bg-blue-700 text-white text-xs sm:text-sm font-semibold shadow-sm flex items-center gap-1.5 transition">
         <span aria-hidden="true">📍</span>
@@ -131,6 +131,8 @@
         <span class="bg-white/95 backdrop-blur text-slate-600 text-[11px] font-semibold px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0">
           快速定位:
         </span>
+        <button type="button" data-preset="ueno" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">上野站</button>
+        <button type="button" data-preset="okachimachi" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">御徒町</button>
         <button type="button" data-preset="ginza4" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">銀座四丁目</button>
         <button type="button" data-preset="sukiyabashi" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">數寄屋橋</button>
         <button type="button" data-preset="takeshita" class="preset-btn bg-white/95 hover:bg-blue-50 text-slate-800 text-[11px] font-medium px-2.5 py-1 rounded-full shadow-sm border border-slate-200 shrink-0 transition">原宿站竹下口</button>
@@ -160,7 +162,7 @@
         </div>
 
         <div class="relative">
-          <input id="search-input" type="search" placeholder="搜尋原宿、銀座吸菸區或地標"
+          <input id="search-input" type="search" placeholder="搜尋上野、原宿、銀座吸菸區或地標"
             class="w-full pl-8 pr-3 py-2 text-xs sm:text-sm bg-slate-100 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white transition" />
           <span class="absolute left-2.5 top-2.5 text-slate-400 text-xs" aria-hidden="true">🔍</span>
         </div>
@@ -168,6 +170,7 @@
         <div id="area-bar" class="flex gap-1.5 overflow-x-auto no-scrollbar" aria-label="選擇地圖區域">
           <button type="button" data-area="all" class="area-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-900 text-white shrink-0">全部區域</button>
           <button type="button" data-area="harajuku" class="area-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">原宿・表參道</button>
+          <button type="button" data-area="ueno" class="area-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">上野・御徒町</button>
           <button type="button" data-area="ginza" class="area-btn px-3 py-1.5 rounded-full text-xs font-semibold bg-slate-100 text-slate-700 shrink-0">銀座・中央區</button>
         </div>
         <div class="flex items-center gap-1.5 overflow-x-auto no-scrollbar pb-0.5" id="filter-bar">
@@ -182,7 +185,7 @@
 
       <!-- Result Count Header -->
       <div class="px-3 py-1.5 bg-slate-50 border-b border-slate-200 flex items-center justify-between text-[11px] text-slate-500 shrink-0">
-        <span id="result-count">顯示 25 個喫煙所（依距離由近到遠排序）</span>
+        <span id="result-count">顯示 43 個喫煙所（依距離由近到遠排序）</span>
         <span id="gps-accuracy" class="hidden text-blue-600 font-medium"></span>
       </div>
 
@@ -196,7 +199,7 @@
     <div class="bg-white rounded-2xl max-w-md w-full p-5 shadow-2xl border border-slate-200 space-y-3.5">
       <div class="flex items-start justify-between gap-3">
         <div>
-          <h2 class="text-base font-bold text-slate-900">原宿・銀座吸菸規定</h2>
+          <h2 class="text-base font-bold text-slate-900">上野・原宿・銀座吸菸規定</h2>
           <p class="text-xs text-slate-500 mt-0.5">請依所在地區的官方規定與現場公告</p>
         </div>
         <button id="btn-close-modal" type="button" class="text-slate-400 hover:text-slate-700 text-lg font-bold px-1" aria-label="關閉">✕</button>
@@ -208,7 +211,9 @@
         <ul class="list-disc pl-5 space-y-1 text-xs text-slate-600">
           <li>竹下通巷內皆為禁菸區，請先於原宿竹下口喫煙所或 WITH HARAJUKU 等指定場所吸菸。</li>
           <li>表參道沿道亦設有多處「表参道第二～第十喫煙所」戶外吸菸點（全日開放），沿線留意「喫煙所」指標即可找到。</li>
+          <li>上野所在的台東區禁止邊走邊抽，早上 07:00–09:00 在道路、公園等公共場所禁菸（指定公眾喫煙所除外）。<a class="text-blue-600 underline" target="_blank" rel="noopener noreferrer" href="https://www.city.taito.lg.jp/kenchiku/machibika/suishin/jyorei.html">台東區規定 ↗</a></li>
           <li>銀座所在的中央區禁止在道路、公園與廣場吸菸，請使用指定喫煙場所。<a class="text-blue-600 underline" target="_blank" rel="noopener noreferrer" href="https://www.city.chuo.lg.jp/a0030/kenkouiryou/kenkou/tobacco/kitsuenbasho/kitsuenichiran.html">中央區官方一覽 ↗</a></li>
+          <li>上野資料：台東區公眾喫煙所名單及座標（2026-08-18）。<a class="text-blue-600 underline" target="_blank" rel="noopener noreferrer" href="https://www.city.taito.lg.jp/kusei/online/opendata/seikatu/shisethutizujouhou.html">台東區開放資料 ↗</a>；假日與臨時休業依現場公告。</li>
           <li>「目前開放中」依日本標準時間（JST, UTC+9）推算，遇颱風或設施整修時可能臨時關閉。</li>
         </ul>
       </div>
@@ -415,8 +420,14 @@
     note:x[13],sourceUrl:x[14]
   }));
     SMOKING_SPOTS.push(...GINZA_SPOTS);
+    // 台東區オープンデータ（CC BY 4.0）：2026-08-18 公衆喫煙所 CSV。
+    // https://www.city.taito.lg.jp/kusei/online/opendata/seikatu/shisethutizujouhou.html
+    const UENO_SPOTS = [{"id":"ueno-1","nameZh":"上野公園前派出所後方","nameJa":"上野公園前交番裏","address":"台東区上野公園１番６５号","lat":35.7112,"lng":139.77377,"area":"ueno","category":"public","categoryLabel":"公園公共喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"靠近上野公園入口，請尋找派出所後方的指定區域。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-2","nameZh":"JR 上野站廣小路口空橋上","nameJa":"JR上野駅（広小路口）ぺデストリアンデッキ上","address":"台東区上野６丁目１５番１４号 ＪＲ上野広小路口ペデストリアンデッキ上","lat":35.71163,"lng":139.77628,"area":"ueno","category":"public","categoryLabel":"站前公共喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"位於廣小路口的行人空橋上，不在地面車道旁。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-3","nameZh":"JR 上野站淺草口空橋上","nameJa":"JR上野駅（浅草口）ペデストリアンデッキ上","address":"台東区上野７丁目１番先 ＪＲ上野浅草口ペデストリアンデッキ上","lat":35.71168,"lng":139.77726,"area":"ueno","category":"public","categoryLabel":"站前公共喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"位於淺草口的行人空橋上。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-8","nameZh":"廣德公園內","nameJa":"広徳公園内","address":"台東区東上野４丁目５番６号","lat":35.71248,"lng":139.78067,"area":"ueno","category":"public","categoryLabel":"公園公共喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"台東區役所東側附近。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-9","nameZh":"池之端二丁目公廁旁","nameJa":"池之端二丁目公衆トイレ横","address":"台東区池之端２丁目４番","lat":35.71358,"lng":139.76573,"area":"ueno","category":"public","categoryLabel":"公共喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"不忍池北側，請在公廁旁指定範圍使用。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-10","nameZh":"台東區役所停車場出口旁","nameJa":"本庁舎駐車場出口横","address":"台東区東上野４丁目５番６号","lat":35.712724,"lng":139.779469,"area":"ueno","category":"public","categoryLabel":"區營公共喫煙所","is24h":false,"indoor":false,"hoursText":"平日開廳日 08:00–19:00","schedule":{"type":"weekday","open":480,"close":1140},"note":"區役所開廳日限定；國定假日與休廳日不開放。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-14","nameZh":"上野公園正岡子規紀念球場旁","nameJa":"上野公園正岡子規記念球場横","address":"台東区上野公園５番２０号","lat":35.714185,"lng":139.77416,"area":"ueno","category":"public","categoryLabel":"公園公共喫煙所","is24h":false,"indoor":false,"hoursText":"07:00–18:00","schedule":{"type":"daily","open":420,"close":1080},"note":"位於紀念球場旁，公園內其餘位置請依現場指示。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-19","nameZh":"7-Eleven 東上野一丁目店","nameJa":"セブン-イレブン　東上野１丁目店","address":"台東区東上野１丁目７番１号","lat":35.70759,"lng":139.77987,"area":"ueno","category":"subsidized","categoryLabel":"指定民間喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"台東區指定的便利商店吸菸點。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-20","nameZh":"7-Eleven 台東松谷一丁目店","nameJa":"セブン-イレブン　台東松が谷１丁目店","address":"台東区松が谷１丁目３番５号","lat":35.71107,"lng":139.78613,"area":"ueno","category":"subsidized","categoryLabel":"指定民間喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"上野站東側、稻荷町方向。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-22","nameZh":"smokers peace ミマツ書房","nameJa":"smokers peace in ミマツ書房","address":"台東区台東３丁目４４番４号","lat":35.70564,"lng":139.77756,"area":"ueno","category":"subsidized","categoryLabel":"指定民間喫煙所","is24h":false,"indoor":true,"hoursText":"週一至六 08:00–21:00；週日及國定假日 09:00–17:00（年初除外）","schedule":{"type":"weekly","open":480,"close":1260,"sundayOpen":540,"sundayClose":1020},"note":"台東區網頁列週日及假日 09:00–17:00；年初休業，請以現場公告為準。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-23","nameZh":"paspa 上野","nameJa":"paspa 上野","address":"台東区上野７丁目４番３号   上野ビル１０１","lat":35.71284,"lng":139.778,"area":"ueno","category":"subsidized","categoryLabel":"區補助室內喫煙所","is24h":false,"indoor":true,"hoursText":"平日 07:00–20:00；週末、假日、年末年始休","schedule":{"type":"weekday","open":420,"close":1200},"note":"上野站淺草口／入谷口方向，上野ビル 101。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-24","nameZh":"paspa 御徒町","nameJa":"paspa 御徒町","address":"台東区上野６丁目９番１号   １Ｆ","lat":35.70902,"lng":139.77537,"area":"ueno","category":"subsidized","categoryLabel":"區補助室內喫煙所","is24h":false,"indoor":true,"hoursText":"平日 07:00–20:00；週末、假日、年末年始休","schedule":{"type":"weekday","open":420,"close":1200},"note":"阿美橫町附近，建物 1 樓。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-26","nameZh":"阿美橫町 Center Building 1F","nameJa":"アメ横センタービル喫煙所","address":"台東区上野４丁目７番８号","lat":35.709078,"lng":139.77454,"area":"ueno","category":"building","categoryLabel":"商場指定喫煙所","is24h":false,"indoor":true,"hoursText":"10:30–19:30；每月第三個週三休（12月除外）","schedule":{"type":"thirdWednesday","open":630,"close":1170},"note":"阿美橫町商場內 1 樓，12 月第三個週三照常營業。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-27","nameZh":"松葉公園內","nameJa":"松葉公園内","address":"台東区松が谷１丁目１２番６号","lat":35.712137,"lng":139.78738,"area":"ueno","category":"public","categoryLabel":"公園公共喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"上野站東側、稻荷町方向。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-28","nameZh":"7-Eleven 上野一丁目店","nameJa":"セブン-イレブン　上野１丁目店","address":"台東区上野１丁目１番１２号","lat":35.705201,"lng":139.7716,"area":"ueno","category":"subsidized","categoryLabel":"指定民間喫煙所","is24h":false,"indoor":false,"hoursText":"07:00–20:00","schedule":{"type":"daily","open":420,"close":1200},"note":"御徒町西南側，請使用店內指定空間。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-30","nameZh":"佐竹公共喫煙所","nameJa":"佐竹公衆喫煙所","address":"台東区台東４丁目２番９号","lat":35.705877,"lng":139.78115,"area":"ueno","category":"subsidized","categoryLabel":"區補助室內喫煙所","is24h":false,"indoor":true,"hoursText":"07:00–24:00；年末年始、黃金週、盂蘭盆節休","schedule":{"type":"daily","open":420,"close":1440},"note":"接近新御徒町，特定連假休業。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-31","nameZh":"上野恩賜公園野外舞台附近","nameJa":"上野恩賜公園野外ステージ近辺喫煙所","address":"台東区上野公園２番","lat":35.70961,"lng":139.77008,"area":"ueno","category":"public","categoryLabel":"公園公共喫煙所","is24h":true,"indoor":false,"hoursText":"24小時","schedule":{"type":"24h"},"note":"不忍池／野外舞台附近，請以現場指標辨認指定範圍。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"},{"id":"ueno-32","nameZh":"e-booth 御徒町（僅加熱菸）","nameJa":"e-booth御徒町　※加熱式たばこ専用","address":"台東区上野３丁目２２番３号","lat":35.706313,"lng":139.77347,"area":"ueno","category":"subsidized","categoryLabel":"加熱菸專用喫煙所","is24h":false,"indoor":true,"hoursText":"平日 07:00–20:00；週末、假日、年末年始休","schedule":{"type":"weekday","open":420,"close":1200},"note":"只可使用加熱式菸草；紙菸不可使用。","sourceUrl":"https://www.city.taito.lg.jp/kenchiku/machibika/kosyu/webmap.html"}];
+    SMOKING_SPOTS.push(...UENO_SPOTS);
 
     const PRESETS = {
+      ueno: { lat: 35.71163, lng: 139.77628, label: 'JR 上野站廣小路口（預設）' },
+      okachimachi: { lat: 35.7084, lng: 139.7749, label: '御徒町站 / 阿美橫町' },
       ginza4: { lat: 35.671216, lng: 139.765048, label: '銀座四丁目路口（預設）' },
       sukiyabashi: { lat: 35.6723, lng: 139.7624, label: '數寄屋橋 / 有樂町' },
       takeshita: { lat: 35.671558, lng: 139.702886, label: 'JR 原宿站竹下口（預設）' },
@@ -455,6 +466,11 @@
       if (s.type === '24h') return true;
       if (s.type === 'daily') return mins >= s.open && mins < s.close;
       if (s.type === 'weekday') return jst.getDay() > 0 && jst.getDay() < 6 && mins >= s.open && mins < s.close;
+      if (s.type === 'weekly') return jst.getDay() === 0 ? mins >= s.sundayOpen && mins < s.sundayClose : mins >= s.open && mins < s.close;
+      if (s.type === 'thirdWednesday') {
+        const closed = jst.getMonth() !== 11 && jst.getDay() === 3 && jst.getDate() >= 15 && jst.getDate() <= 21;
+        return !closed && mins >= s.open && mins < s.close;
+      }
       return true;
     }
 
@@ -564,7 +580,7 @@
 
     function buildPopupHtml(spot) {
       const statusBadge = spot.openNow
-        ? '<span class="inline-block px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">開放中</span>'
+        ? '<span class="inline-block px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-semibold">' + (spot.area === 'ueno' && ['weekday','weekly'].includes(spot.schedule.type) ? '時段內・假日請確認' : '開放中') + '</span>'
         : '<span class="inline-block px-2 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-semibold">休息中</span>';
       const indoorBadge = spot.indoor
         ? '<span class="inline-block px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-medium">室內型</span>'
@@ -645,7 +661,7 @@
         const isSel = state.selectedSpotId === spot.id;
         const navUrl = `https://www.google.com/maps/dir/?api=1&destination=${spot.lat},${spot.lng}&travelmode=walking`;
         const statusDot = spot.openNow
-          ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-semibold">開放中</span>'
+          ? '<span class="px-1.5 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[10px] font-semibold">' + (spot.area === 'ueno' && ['weekday','weekly'].includes(spot.schedule.type) ? '時段內・假日請確認' : '開放中') + '</span>'
           : '<span class="px-1.5 py-0.5 rounded bg-slate-200 text-slate-600 text-[10px] font-semibold">休息中</span>';
         const envBadge = spot.indoor
           ? '<span class="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 text-[10px] font-medium">室內</span>'
@@ -739,10 +755,11 @@
 
       const distToHarajukuKm = Math.min(
         calcDistanceMeters(latitude, longitude, 35.671558, 139.702886),
-        calcDistanceMeters(latitude, longitude, 35.671216, 139.765048)
+        calcDistanceMeters(latitude, longitude, 35.671216, 139.765048),
+        calcDistanceMeters(latitude, longitude, 35.71163, 139.77628)
       ) / 1000;
       if (distToHarajukuKm > 15) {
-        showBanner(`已取得您的手機定位！偵測到您目前距離原宿或銀座最近地區約 ${Math.round(distToHarajukuKm)} 公里，已依實際距離排序；您也可以一鍵模擬位於原宿車站。`, true);
+        showBanner(`已取得您的手機定位！偵測到您目前距離上野、原宿或銀座最近地區約 ${Math.round(distToHarajukuKm)} 公里，已依實際距離排序；您也可以一鍵模擬位於原宿車站。`, true);
         map.setView([35.671558, 139.702886], 16);
       } else {
         hideBanner();
@@ -840,7 +857,7 @@
         el.className = 'area-btn px-3 py-1.5 rounded-full text-xs font-semibold shrink-0 ' + (el === btn ? 'bg-slate-900 text-white' : 'bg-slate-100 text-slate-700');
       });
       if (state.activeArea !== 'all') {
-        const center = state.activeArea === 'ginza' ? PRESETS.ginza4 : PRESETS.takeshita;
+        const center = state.activeArea === 'ginza' ? PRESETS.ginza4 : state.activeArea === 'ueno' ? PRESETS.ueno : PRESETS.takeshita;
         map.setView([center.lat, center.lng], 15);
         if (state.userLocation.source !== 'gps') state.userLocation = { ...center, source: 'demo', accuracy: null };
       }
